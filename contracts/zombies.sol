@@ -35,4 +35,19 @@ contract ZombieFactory {
         return rand % dnaModulus;
     }
 
+
+    // Create a public function named createRandomZombie. It will take one parameter named
+    // _name (a string with the data location set to memory).
+    // (Note: Declare this function public just as you declared previous functions private)
+
+    // The first line of the function should run the _generateRandomDna function on _name,
+    // and store it in a uint named randDna.
+
+    // The second line should run the _createZombie function and pass it _name and randDna.
+    function createRandomZombie(string memory _name) public {
+        uint randDna = _generateRandomDna(_name);
+        _createZombie(_name, randDna);
+    }
+
+
 }
