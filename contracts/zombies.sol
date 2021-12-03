@@ -2,6 +2,8 @@ pragma solidity >=0.5.0 <0.6.0;
 
 contract ZombieFactory {
 
+    event NewZombie(uint zombieId, string name, uint dna);
+
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
 
@@ -15,7 +17,18 @@ contract ZombieFactory {
 
     // private funtion : can be called only from this contract.
     function _createZombie(string memory _name, uint _dna) private {
-        zombies.push(Zombie(_name, _dna));
+        uint id = zombies.push(Zombie(_name, _dna)) - 1;
+
+        // Declare an event called NewZombie. It should pass zombieId (a uint), name (a string), and dna (a uint).
+
+        // Modify the _createZombie function to fire the NewZombie event after adding the new Zombie to our zombies array.
+
+        // You're going to need the zombie's id. array.push() returns a uint of the new length of the array -
+        // and since the first item in an array has index 0, array.push() - 1
+        // will be the index of the zombie we just added. Store the result of zombies.push() - 1 in a uint called id,
+        // so you can use this in the NewZombie event in the next line.
+
+        emit NewZombie(id, _name, _dna);
     }
 
 
