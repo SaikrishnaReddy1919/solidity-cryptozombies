@@ -25,7 +25,7 @@ contract ZombieFeeding is ZombieFactory {
 
     // When a zombie feeds on some other lifeform, its DNA will combine
     // with the other lifeform's DNA to create a new zombie.
-    function feedAndMultiply(uint _zombieId, uint _targetDna) public view {
+    function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) public view {
       require(msg.sender == zombieToOwner[_zombieId], "Sender must to equal to owner of this zombie");
       Zombie storage myZombie = zombies[_zombieId];
 
@@ -34,12 +34,16 @@ contract ZombieFeeding is ZombieFactory {
     // To do this, we can set _targetDna equal to _targetDna % dnaModulus to only take the last 16 digits.
       uint newTargetDna = _targetDna % dnaModulus;
       uint newDna = (myZombie.dna + newTargetDna) / 2;
+
+      if(keccak256(abi.encodePacked(_species)) == keccak256(abi.encodePacked("kitty"))){
+        newDna = newDna - newDna % 100 + 99;
+      }
       _createZombie("NoName",newDna);
   }
 
   function feedOnKitty(uint _zombieId, uint _kittyId) public view {
       uint kittyDna;
       (,,,,,,,,,kittyDna) = kittyContract.getKitty(_kittyId);
-      feedAndMultiply(_zombieId, kittyDna);
+      feedAndMultiply(_zombieId, kittyDna, "kitty");
   }
 }
