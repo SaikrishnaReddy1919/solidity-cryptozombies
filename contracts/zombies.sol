@@ -75,6 +75,19 @@ contract ZombieFactory {
 
     // The second line should run the _createZombie function and pass it _name and randDna.
     function createRandomZombie(string memory _name) public {
+
+        // In our zombie game, we don't want the user to be able to create unlimited zombies
+        // in their army by repeatedly calling createRandomZombie — it would make the game not very fun.
+
+        // Let's use require to make sure this function only gets executed one time per user,
+        // when they create their first zombie.
+
+        // Put a require statement at the beginning of createRandomZombie.
+        // The function should check to make sure ownerZombieCount[msg.sender] is equal to 0, and
+        // throw an error otherwise.
+
+        require(ownerZombieCount[msg.sender] == 0, "Your zombie count should be equal to zero.");
+
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
     }
