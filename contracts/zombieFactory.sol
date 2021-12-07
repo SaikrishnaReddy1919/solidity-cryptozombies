@@ -29,7 +29,7 @@ contract ZombieFactory {
 
 
     // private funtion : can be called only from this contract.
-    function _createZombie(string memory _name, uint _dna) private {
+    function _createZombie(string memory _name, uint _dna) internal {
         uint id = zombies.push(Zombie(_name, _dna)) - 1;
 
         // msg.sender demo
