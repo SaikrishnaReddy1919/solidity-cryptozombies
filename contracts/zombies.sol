@@ -32,6 +32,10 @@ contract ZombieFactory {
     function _createZombie(string memory _name, uint _dna) private {
         uint id = zombies.push(Zombie(_name, _dna)) - 1;
 
+        // msg.sender demo
+        zombieToOwner[id] = msg.sender;
+        ownerZombieCount[msg.sender]++;
+
         // Declare an event called NewZombie. It should pass zombieId (a uint), name (a string), and dna (a uint).
 
         // Modify the _createZombie function to fire the NewZombie event after adding the new Zombie to our zombies array.
