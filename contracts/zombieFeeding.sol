@@ -28,6 +28,19 @@ contract ZombieFeeding is ZombieFactory {
       kittyContract = KittyInterface(_address);
     }
 
+
+
+    function _triggerCooldown(Zombie storage _zombie) internal{
+      _zombie.readyTime = uint32(now + cooldownTime);
+    }
+    // This function will tell us if enough time has passed since the last time the zombie fed.
+
+    function _isReady(Zombie storage _zombie) internal view returns(bool){
+      return (_zombie.readyTime <= now);
+    }
+
+    
+
     // When a zombie feeds on some other lifeform, its DNA will combine
     // with the other lifeform's DNA to create a new zombie.
     function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) public view {
