@@ -18,10 +18,13 @@ contract KittyInterface {
 
 contract ZombieFeeding is ZombieFactory {
 
-    address ckAddress = 0x06012c8cf97BEaD5deAe237070F9587f8E7A266d;
+    KittyInterface kittyContract;
 
-    // Initialize kittyContract here using `ckAddress` from above
-    KittyInterface kittyContract = KittyInterface(ckAddress);
+    // instead of hardcoding contract address, below is an option to set c_address. so
+    // that even if something goes wrong other contract, we can update it to new one.
+    function setKittyContractAddress(address _address) external {
+      kittyContract = KittyInterface(_address);
+    }
 
     // When a zombie feeds on some other lifeform, its DNA will combine
     // with the other lifeform's DNA to create a new zombie.
