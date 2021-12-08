@@ -22,7 +22,9 @@ contract ZombieFeeding is ZombieFactory {
 
     // instead of hardcoding contract address, below is an option to set c_address. so
     // that even if something goes wrong other contract, we can update it to new one.
-    function setKittyContractAddress(address _address) external {
+
+    // onlyOwner : the person who deployed first can call this contract.
+    function setKittyContractAddress(address _address) external onlyOwner {
       kittyContract = KittyInterface(_address);
     }
 
