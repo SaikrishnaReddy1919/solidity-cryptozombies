@@ -8,9 +8,20 @@ contract ZombieFactory is Ownable {
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
 
+
+    // Normally there's no benefit to using these sub-types because
+    // Solidity reserves 256 bits of storage regardless of the uint size.
+    // For example, using uint8 instead of uint (uint256) won't save you any gas.
+
+    // But there's an exception to this: inside structs.
+
+    // If you have multiple uints inside a struct, using a smaller-sized uint when
+    // possible will allow Solidity to pack these variables together to take up less storage.
     struct Zombie {
         string name;
         uint dna;
+        uint32 level;
+        uint32 readyTime;
     }
 
     Zombie[] public zombies;
