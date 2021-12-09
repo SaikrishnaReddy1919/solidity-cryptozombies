@@ -4,7 +4,9 @@ import "./zombieattack.sol";
 import "./erc721.sol";
 import "./safemath.sol";
 
-
+/// @title a contract for zombie ownership
+/// @author Saikrishna Reddy
+/// @dev ERC721 openzippelins complaint implementation.
 contract ZombieOwnership is ZombieAttack, ERC721 {
 
   using SafeMath for uint256;

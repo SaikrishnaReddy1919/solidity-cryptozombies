@@ -55,7 +55,7 @@ contract ZombieFactory is Ownable {
 
         // msg.sender demo
         zombieToOwner[id] = msg.sender;
-        ownerZombieCount[msg.sender]++;
+        ownerZombieCount[msg.sender] = ownerZombieCount[msg.sender].add(1);
 
         // Declare an event called NewZombie. It should pass zombieId (a uint), name (a string), and dna (a uint).
 
