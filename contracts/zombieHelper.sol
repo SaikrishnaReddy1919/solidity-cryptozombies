@@ -16,6 +16,17 @@ contract ZombieHelper is ZombieFeeding {
     zombies[_zombieId].level++;
   }
 
+  function withdraw() external onlyOwner{
+    address payable _owner = address(uint160(owner()));
+    _owner.transfer(address(this).balance);
+  }
+
+  // if eth value goes up to some high value in future, if we have a way to
+  // to set up level up fee value than game is not expensive, otherwise game is more expensive.
+  function setLevelUpFee(uint _fee) external onlyOwner{
+    levelUpFee = _fee;
+  }
+
    function changeName(uint _zombieId, string calldata _newName) external aboveLevel(2, _zombieId) {
     require(msg.sender == zombieToOwner[_zombieId], "requires Owner");
     zombies[_zombieId].name = _newName;
