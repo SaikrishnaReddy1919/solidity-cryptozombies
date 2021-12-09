@@ -20,6 +20,10 @@ contract ZombieFeeding is ZombieFactory {
 
     KittyInterface kittyContract;
 
+    modifier ownerOf(uint _zombieId){
+      require(msg.sender == zombieToOwner[_zombieId]);
+      _;
+    }
     // instead of hardcoding contract address, below is an option to set c_address. so
     // that even if something goes wrong other contract, we can update it to new one.
 
@@ -43,8 +47,7 @@ contract ZombieFeeding is ZombieFactory {
 
     // When a zombie feeds on some other lifeform, its DNA will combine
     // with the other lifeform's DNA to create a new zombie.
-    function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) internal {
-      require(msg.sender == zombieToOwner[_zombieId], "Sender must to equal to owner of this zombie");
+    function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) internal ownerOf(_zombieId){
       Zombie storage myZombie = zombies[_zombieId];
 
       require(_isReady(myZombie));
