@@ -459,3 +459,20 @@ Putting it together, here's a bare-bones test:
  })
  ```
 >Note: A well-thought test explains what the code actually does. Make sure the description of the test suite and the test case can be read together as a coherent statement. It’s like you’re writing documentation.
+
+### Usually, every test has the following phases:
+
+- #### set up: in which we define the initial state and initialize the inputs.
+
+- #### act: where we actually test the code. Always make sure you test only one thing.
+
+- #### assert: where we check the results.
+
+Lets look at what our test should do in some more detail.
+
+### 1. Set up
+In Chapter 2, you learned to create a contract abstraction. However, a contract abstraction, as its name says, is just an abstraction. In order to actually interact with our smart contract, we have to create a JavaScript object that will act as an instance of the contract. Continuing our example with myAwesomeContract, we can use the contract abstraction to initialize our instance like this:
+
+```Javascript
+const contractInstance = await myAwesomeContract.new();
+```
