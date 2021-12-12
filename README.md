@@ -470,9 +470,53 @@ Putting it together, here's a bare-bones test:
 
 Lets look at what our test should do in some more detail.
 
-### 1. Set up
+### Set up
 In Chapter 2, you learned to create a contract abstraction. However, a contract abstraction, as its name says, is just an abstraction. In order to actually interact with our smart contract, we have to create a JavaScript object that will act as an instance of the contract. Continuing our example with myAwesomeContract, we can use the contract abstraction to initialize our instance like this:
 
 ```Javascript
 const contractInstance = await myAwesomeContract.new();
 ```
+
+
+### The context function
+To group tests, Truffle provides a function called context. Let me quickly show you how use it in order to better structure our code:
+
+```javascript
+context("with the single-step transfer scenario", async () => {
+    it("should transfer a zombie", async () => {
+      // TODO: Test the single-step transfer scenario.
+    })
+})
+
+context("with the two-step transfer scenario", async () => {
+    it("should approve and then transfer a zombie when the approved address calls transferFrom", async () => {
+      // TODO: Test the two-step scenario.  The approved address calls transferFrom
+    })
+    it("should approve and then transfer a zombie when the owner calls transferFrom", async () => {
+        // TODO: Test the two-step scenario.  The owner calls transferFrom
+     })
+})
+```
+If we add this to our CryptoZombies.js file and then run truffle test the output would look similar to this:
+
+```Contract: CryptoZombies
+    ✓ should be able to create a new zombie (100ms)
+    ✓ should not allow two zombies (251ms)
+    with the single-step transfer scenario
+      ✓ should transfer a zombie
+    with the two-step transfer scenario
+      ✓ should approve and then transfer a zombie when the owner calls transferFrom
+      ✓ should approve and then transfer a zombie when the approved address calls transferFrom
+
+
+  5 passing (2s)
+```
+Well?
+
+Hmm...
+
+Take a look again - there's an issue with the above output. It looks like all tests have passed which is obviously false since we didn't even write them yet!!
+
+Fortunately, there's an easy solution- if we just place an x in front of the context() functions as follows: xcontext(), Truffle will skip those tests.
+
+>Note: x can be placed in front of an it() function as well. Don't forget to remove all the x's when the tests for those functions have been written!
