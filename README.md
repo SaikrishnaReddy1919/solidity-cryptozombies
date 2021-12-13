@@ -548,3 +548,72 @@ In this lesson, we will be using Infura to deploy our code to Ethereum. This way
 >Note: Maybe you are asking why we chose not to install truffle-hdwallet-provider in the previous chapter using something like:
 
 ``` npm install truffle truffle-hdwallet-provider```
+
+<hr>
+
+## ORACLES
+
+### Calling Other Contracts:
+Awesome! Now that you've saved the address of the oracle into a variable, let's learn about how you can call a function from a different contract.
+
+### Calling the Oracle Contract
+For the caller contract to interact with the oracle, you must first define something called an interface.
+
+Interfaces are somehow similar to contracts, but they only declare functions. In other words, an interface can't:
+
+- define state variables,
+- constructors,
+- or inherit from other contracts.
+You can think of an interface as of an ABI. Since they're used to allow different contracts to interact with each other, all functions must be external
+
+Let's look at a simple example. Suppose there's a contract called FastFood that looks something like the following:
+
+```javascript
+pragma solidity 0.5.0;
+
+contract FastFood {
+  function makeSandwich(string calldata _fillingA, string calldata _fillingB) external {
+    //Make the sandwich
+  }
+}
+```
+This very simple contract implements a function that "makes" a sandwich. If you know the address of the FastFood contract and the signature of the makeSandwich, then you can call it.
+
+>Note: A function signature comprises the function name, the list of the parameters, and the return value(s).
+
+Continuing with our example, let's say you want to write a contract called PrepareLunch that calls the makeSandwich function, passing the list of ingredients such as "sliced ham" and "pickled veggies". I'm not hungry but this sounds tempting😄.
+
+To make it so that the PrepareLunch smart contract can call the makeSandwich function, you must follow the following steps:
+
+Define the interface of the FastFood contract by pasting the following snippet into a file called FastFoodInterface.sol:
+
+```javascript
+pragma solidity 0.5.0;
+
+interface FastFoodInterface {
+   function makeSandwich(string calldata _fillingA, string calldata _fillingB) external;
+}
+```
+Next, you must import the contents of the ./FastFoodInterface.sol file into the PrepareLaunch contract.
+
+Lastly, you must instantiate the FastFood contract using the interface:
+
+```fastFoodInstance = FastFoodInterface(_address);```
+At this point, the PrepareLunch smart contract can call the makeSandwich function of the FastFood smart contract:
+
+ ```fastFoodInstance.makeSandwich("sliced ham", "pickled veggies");```
+Putting it together, here's how the PrepareLunch contract would look like:
+
+```javascript
+pragma solidity 0.5.0;
+import "./FastFoodInterface.sol";
+contract PrepareLunch {
+
+  FastFoodInterface private fastFoodInstance;
+
+  function instantiateFastFoodContract (address _address) public {
+    fastFoodInstance = FastFoodInterface(_address);
+    fastFoodInstance.makeSandwich("sliced ham", "pickled veggies");
+  }
+}
+```

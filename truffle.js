@@ -22,7 +22,10 @@ module.exports = {
     rinkeby: {
       provider: function () {
         // Setting the provider with the Infura Rinkeby address and Token
-        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/<YOUR_INFURA_API_KEY>");
+        return new HDWalletProvider(
+          mnemonic,
+          "https://rinkeby.infura.io/v3/9604f782eff54702a08b409f6dc78e99"
+        );
       },
       network_id: 4,
     },
