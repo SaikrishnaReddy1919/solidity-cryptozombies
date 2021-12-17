@@ -58,13 +58,14 @@ This allows for some really interesting logic, like requiring a certain payment 
 
 <hr>
 
-
 ## Random number generation via keccak256
+
 The best source of randomness we have in Solidity is the keccak256 hash function.
 
 We could do something like the following to generate a random number:
 
 ### Generate a random number between 1 and 100:
+
 ```uint randNonce = 0;
 uint random = uint(keccak256(abi.encodePacked(now, msg.sender, randNonce))) % 100;
 randNonce++;
@@ -76,6 +77,7 @@ What this would do is take the timestamp of now, the msg.sender, and an incremen
 It would then "pack" the inputs and use keccak to convert them to a random hash. Next, it would convert that hash to a uint, and then use % 100 to take only the last 2 digits. This will give us a totally random number between 0 and 99.
 
 ### This method is vulnerable to attack by a dishonest node
+
 In Ethereum, when you call a function on a contract, you broadcast it to a node or nodes on the network as a transaction. The nodes on the network then collect a bunch of transactions, try to be the first to solve a computationally-intensive mathematical problem as a "Proof of Work", and then publish that group of transactions along with their Proof of Work (PoW) as a block to the rest of the network.
 
 Once a node has solved the PoW, the other nodes stop trying to solve the PoW, verify that the other node's list of transactions are valid, and then accept the block and move on to trying to solve the next block.
@@ -87,6 +89,7 @@ Let's say we had a coin flip contract — heads you double your money, tails you
 If I were running a node, I could publish a transaction only to my own node and not share it. I could then run the coin flip function to see if I won — and if I lost, choose not to include that transaction in the next block I'm solving. I could keep doing this indefinitely until I finally won the coin flip and solved the next block, and profit.
 
 ### So how do we generate random numbers safely in Ethereum?
+
 Because the entire contents of the blockchain are visible to all participants, this is a hard problem, and its solution is beyond the scope of this tutorial. You can read this [StackOverflow](https://ethereum.stackexchange.com/questions/191/how-can-i-securely-generate-a-random-number-in-my-smart-contract) thread for some ideas. One idea would be to use an oracle to access a random number function from outside of the Ethereum blockchain.
 
 Of course, since tens of thousands of Ethereum nodes on the network are competing to solve the next block, my odds of solving the next block are extremely low. It would take me a lot of time or computing resources to exploit this profitably — but if the reward were high enough (like if I could bet $100,000,000 on the coin flip function), it would be worth it for me to attack.
@@ -100,13 +103,15 @@ Oracles : a secure way to pull data in from outside of Ethereum
 <hr>
 
 ## Tokens on Ethereum
-A token on Ethereum is basically just a smart contract that follows some common rules — namely it implements a standard set of functions that all other token contracts share, such as transferFrom(address _from, address _to, uint256 _tokenId) and balanceOf(address _owner).
+
+A token on Ethereum is basically just a smart contract that follows some common rules — namely it implements a standard set of functions that all other token contracts share, such as transferFrom(address \_from, address \_to, uint256 \_tokenId) and balanceOf(address \_owner).
 
 Internally the smart contract usually has a mapping, mapping(address => uint256) balances, that keeps track of how much balance each address has.
 
 So basically a token is just a contract that keeps track of who owns how much of that token, and some functions so those users can transfer their tokens to other addresses.
 
 ### Why does it matter?
+
 Since all ERC20 tokens share the same set of functions with the same names, they can all be interacted with in the same ways.
 
 This means if you build an application that is capable of interacting with one ERC20 token, it's also capable of interacting with any ERC20 token. That way more tokens can easily be added to your app in the future without needing to be custom coded. You could simply plug in the new token contract address, and boom, your app has another token it can use.
@@ -116,6 +121,7 @@ One example of this would be an exchange. When an exchange adds a new ERC20 toke
 The exchange only needs to implement this transfer logic once, then when it wants to add a new ERC20 token, it's simply a matter of adding the new contract address to its database.
 
 ### Other token standards
+
 ERC20 tokens are really cool for tokens that act like currencies. But they're not particularly useful for representing zombies in our zombie game.
 
 For one, zombies aren't divisible like currencies — I can send you 0.237 ETH, but transfering you 0.237 of a zombie doesn't really make sense.
@@ -127,7 +133,6 @@ There's another token standard that's a much better fit for crypto-collectibles 
 ERC721 tokens are not interchangeable since each one is assumed to be unique, and are not divisible. You can only trade them in whole units, and each one has a unique ID. So these are a perfect fit for making our zombies tradeable.
 
 > Note that using a standard like ERC721 has the benefit that we don't have to implement the auction or escrow logic within our contract that determines how players can trade / sell our zombies. If we conform to the spec, someone else could build an exchange platform for crypto-tradable ERC721 assets, and our ERC721 zombies would be usable on that platform. So there are clear benefits to using a token standard instead of rolling your own trading logic.
-
 
 ```
 contract ERC721 {
@@ -141,10 +146,10 @@ contract ERC721 {
 }
 ```
 
-
 <hr>
 
 ## Web3 Providers
+
 Great! Now that we have Web3.js in our project, let's get it initialized and talking to the blockchain.
 
 The first thing we need is a Web3 Provider.
@@ -154,6 +159,7 @@ Remember, Ethereum is made up of nodes that all share a copy of the same data. S
 You could host your own Ethereum node as a provider. However, there's a third-party service that makes your life easier so you don't need to maintain your own Ethereum node in order to provide a DApp for your users — Infura.
 
 ## Infura
+
 Infura is a service that maintains a set of Ethereum nodes with a caching layer for fast reads, which you can access for free through their API. Using Infura as a provider, you can reliably send and receive messages to/from the Ethereum blockchain without needing to set up and maintain your own node.
 
 You can set up Web3 to use Infura as your web3 provider as follows:
@@ -171,22 +177,23 @@ Cryptography is complicated, so unless you're a security expert and you really k
 But luckily you don't need to — there are already services that handle this for you. The most popular of these is Metamask.
 
 ## Metamask
+
 Metamask is a browser extension for Chrome and Firefox that lets users securely manage their Ethereum accounts and private keys, and use these accounts to interact with websites that are using Web3.js. (If you haven't used it before, you'll definitely want to go and install it — then your browser is Web3 enabled, and you can now interact with any website that communicates with the Ethereum blockchain!).
 
 And as a developer, if you want users to interact with your DApp through a website in their web browser (like we're doing with our CryptoZombies game), you'll definitely want to make it Metamask-compatible.
 
->Note: Metamask uses Infura's servers under the hood as a web3 provider, just like we did above — but it also gives the user the option to choose their own web3 provider. So by using Metamask's web3 provider, you're giving the user a choice, and it's one less thing you have to worry about in your app.
+> Note: Metamask uses Infura's servers under the hood as a web3 provider, just like we did above — but it also gives the user the option to choose their own web3 provider. So by using Metamask's web3 provider, you're giving the user a choice, and it's one less thing you have to worry about in your app.
 
 ### Using Metamask's web3 provider
+
 Metamask injects their web3 provider into the browser in the global JavaScript object web3. So your app can check to see if web3 exists, and if it does use web3.currentProvider as its provider.
 
 Here's some template code provided by Metamask for how we can detect to see if the user has Metamask installed, and if not tell them they'll need to install it to use our app:
 
 ```javascript
-window.addEventListener('load', function() {
-
+window.addEventListener("load", function () {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-  if (typeof web3 !== 'undefined') {
+  if (typeof web3 !== "undefined") {
     // Use Mist/MetaMask's provider
     web3js = new Web3(web3.currentProvider);
   } else {
@@ -196,23 +203,24 @@ window.addEventListener('load', function() {
   }
 
   // Now you can start your app & access web3js freely:
-  startApp()
-
-})
+  startApp();
+});
 ```
 
 You can use this boilerplate code in all the apps you create in order to require users to have Metamask to use your DApp.
 
->Note: There are other private key management programs your users might be using besides MetaMask, such as the web browser Mist. However, they all implement a common pattern of injecting the variable web3, so the method we describe here for detecting the user's web3 provider will work for these as well.
+> Note: There are other private key management programs your users might be using besides MetaMask, such as the web browser Mist. However, they all implement a common pattern of injecting the variable web3, so the method we describe here for detecting the user's web3 provider will work for these as well.
 
 <hr>
 
 ## Talking to Contracts
+
 Now that we've initialized Web3.js with MetaMask's Web3 provider, let's set it up to talk to our smart contract.
 
 Web3.js will need 2 things to talk to your contract: its address and its ABI.
 
 ### Contract Address
+
 After you finish writing your smart contract, you will compile it and deploy it to Ethereum. We're going to cover deployment in the next lesson, but since that's quite a different process from writing code, we've decided to go out of order and cover Web3.js first.
 
 After you deploy your contract, it gets a fixed address on Ethereum where it will live forever. If you recall from Lesson 2, the address of the CryptoKitties contract on Ethereum mainnet is 0x06012c8cf97BEaD5deAe237070F9587f8E7A266d.
@@ -220,6 +228,7 @@ After you deploy your contract, it gets a fixed address on Ethereum where it wil
 You'll need to copy this address after deploying in order to talk to your smart contract.
 
 ### Contract ABI
+
 The other thing Web3.js will need to talk to your contract is its ABI.
 
 ABI stands for Application Binary Interface. Basically it's a representation of your contracts' methods in JSON format that tells Web3.js how to format function calls in a way your contract will understand.
@@ -227,9 +236,11 @@ ABI stands for Application Binary Interface. Basically it's a representation of 
 When you compile your contract to deploy to Ethereum (which we'll cover in Lesson 7), the Solidity compiler will give you the ABI, so you'll need to copy and save this in addition to the contract address.
 
 ### Instantiating a Web3.js Contract
+
 Once you have your contract's address and ABI, you can instantiate it in Web3 as follows:
 
 // Instantiate myContract
+
 ```javascript
 var myContract = new web3js.eth.Contract(myABI, myContractAddress);
 ```
@@ -237,62 +248,69 @@ var myContract = new web3js.eth.Contract(myABI, myContractAddress);
 <hr>
 
 ## Calling Contract Functions
+
 Our contract is all set up! Now we can use Web3.js to talk to it.
 
 Web3.js has two methods we will use to call functions on our contract: call and send.
 
 ### Call
+
 call is used for view and pure functions. It only runs on the local node, and won't create a transaction on the blockchain.
 
->Review: view and pure functions are read-only and don't change state on the blockchain. They also don't cost any gas, and the user won't be prompted to sign a transaction with MetaMask.
+> Review: view and pure functions are read-only and don't change state on the blockchain. They also don't cost any gas, and the user won't be prompted to sign a transaction with MetaMask.
 
 Using Web3.js, you would call a function named myMethod with the parameter 123 as follows:
 
 myContract.methods.myMethod(123).call()
+
 ### Send
+
 send will create a transaction and change data on the blockchain. You'll need to use send for any functions that aren't view or pure.
 
->Note: sending a transaction will require the user to pay gas, and will pop up their Metamask to prompt them to sign a transaction. When we use Metamask as our web3 provider, this all happens automatically when we call send(), and we don't need to do anything special in our code. Pretty cool!
+> Note: sending a transaction will require the user to pay gas, and will pop up their Metamask to prompt them to sign a transaction. When we use Metamask as our web3 provider, this all happens automatically when we call send(), and we don't need to do anything special in our code. Pretty cool!
 
 Using Web3.js, you would send a transaction calling a function named myMethod with the parameter 123 as follows:
 
-```myContract.methods.myMethod(123).send()```
+`myContract.methods.myMethod(123).send()`
 The syntax is almost identical to call().
 
 ### Getting Zombie Data
+
 Now let's look at a real example of using call to access data on our contract.
 
 Recall that we made our array of zombies public:
 
-```Zombie[] public zombies;```
+`Zombie[] public zombies;`
 In Solidity, when you declare a variable public, it automatically creates a public "getter" function with the same name. So if you wanted to look up the zombie with id 15, you would call it as if it were a function: zombies(15).
 
 Here's how we would write a JavaScript function in our front-end that would take a zombie id, query our contract for that zombie, and return the result:
 
->Note: All the code examples we're using in this lesson are using version 1.0 of Web3.js, which uses promises instead of callbacks. Many other tutorials you'll see online are using an older version of Web3.js. The syntax changed a lot with version 1.0, so if you're copying code from other tutorials, make sure they're using the same version as you!
+> Note: All the code examples we're using in this lesson are using version 1.0 of Web3.js, which uses promises instead of callbacks. Many other tutorials you'll see online are using an older version of Web3.js. The syntax changed a lot with version 1.0, so if you're copying code from other tutorials, make sure they're using the same version as you!
 
 ```javascript
 function getZombieDetails(id) {
-  return cryptoZombies.methods.zombies(id).call()
+  return cryptoZombies.methods.zombies(id).call();
 }
 ```
 
 // Call the function and do something with the result:
+
 ```javascript
-getZombieDetails(15)
-.then(function(result) {
+getZombieDetails(15).then(function (result) {
   console.log("Zombie 15: " + JSON.stringify(result));
 });
 ```
+
 Let's walk through what's happening here.
 
-```cryptoZombies.methods.zombies(id).call()``` will communicate with the Web3 provider node and tell it to return the zombie with index id from Zombie[] public zombies on our contract.
+`cryptoZombies.methods.zombies(id).call()` will communicate with the Web3 provider node and tell it to return the zombie with index id from Zombie[] public zombies on our contract.
 
 Note that this is asynchronous, like an API call to an external server. So Web3 returns a promise here. (If you're not familiar with JavaScript promises... Time to do some additional homework before continuing!)
 
 Once the promise resolves (which means we got an answer back from the web3 provider), our example code continues with the then statement, which logs result to the console.
 
 result will be a javascript object that looks like this:
+
 ```JSON
 {
   "name": "H4XF13LD MORRIS'S COOLER OLDER BROTHER",
@@ -303,11 +321,13 @@ result will be a javascript object that looks like this:
   "lossCount": "0" // Obviously.
 }
 ```
+
 We could then have some front-end logic to parse this object and display it in a meaningful way on the front-end.
 
 <hr>
 
 ## Sending Transactions
+
 using send functions to change data on our smart contract.
 
 There are a few major differences from call functions:
@@ -319,7 +339,9 @@ There are a few major differences from call functions:
 - There will be a significant delay from when the user sends a transaction and when that transaction actually takes effect on the blockchain. This is because we have to wait for the transaction to be included in a block, and the block time for Ethereum is on average 15 seconds. If there are a lot of pending transactions on Ethereum or if the user sends too low of a gas price, our transaction may have to wait several blocks to get included, and this could take minutes.
 
 ### Example
+
 #### Creating zombies
+
 Let's look at an example with the first function in our contract a new user will call: createRandomZombie.
 
 As a review, here is the Solidity code in our contract:
@@ -332,6 +354,7 @@ function createRandomZombie(string _name) public {
   _createZombie(_name, randDna);
 }
 ```
+
 Here's an example of how we could call this function in Web3.js using MetaMask:
 
 ```javascript
@@ -340,80 +363,92 @@ function createRandomZombie(name) {
   // the transaction has been sent
   $("#txStatus").text("Creating new zombie on the blockchain. This may take a while...");
   // Send the tx to our contract:
-  return cryptoZombies.methods.createRandomZombie(name)
-  .send({ from: userAccount })
-  .on("receipt", function(receipt) {
-    $("#txStatus").text("Successfully created " + name + "!");
-    // Transaction was accepted into the blockchain, let's redraw the UI
-    getZombiesByOwner(userAccount).then(displayZombies);
-  })
-  .on("error", function(error) {
-    // Do something to alert the user their transaction has failed
-    $("#txStatus").text(error);
-  });
+  return cryptoZombies.methods
+    .createRandomZombie(name)
+    .send({ from: userAccount })
+    .on("receipt", function (receipt) {
+      $("#txStatus").text("Successfully created " + name + "!");
+      // Transaction was accepted into the blockchain, let's redraw the UI
+      getZombiesByOwner(userAccount).then(displayZombies);
+    })
+    .on("error", function (error) {
+      // Do something to alert the user their transaction has failed
+      $("#txStatus").text(error);
+    });
 }
 ```
+
 Our function sends a transaction to our Web3 provider, and chains some event listeners:
 
-- receipt 
+- receipt
   - will fire when the transaction is included into a block on Ethereum, which means our zombie has been created and saved on our contract
-- error 
+- error
   - will fire if there's an issue that prevented the transaction from being included in a block, such as the user not sending enough gas. We'll want to inform the user in our UI that the transaction didn't go through so they can try again.
 
-
->Note: You can optionally specify gas and gasPrice when you call send, e.g. .send({ from: userAccount, gas: 3000000 }). If you don't specify this, MetaMask will let the user choose these values.
+> Note: You can optionally specify gas and gasPrice when you call send, e.g. .send({ from: userAccount, gas: 3000000 }). If you don't specify this, MetaMask will let the user choose these values.
 
 <hr>
 
 ## Subscribing to Events
+
 As you can see, interacting with your contract via Web3.js is pretty straightforward — once you have your environment set up, calling functions and sending transactions is not all that different from a normal web API.
 
 There's one more aspect we want to cover — subscribing to events from your contract.
 
 ### Listening for New Zombies
+
 If you recall from zombiefactory.sol, we had an event called NewZombie that we fired every time a new zombie was created:
 
-```event NewZombie(uint zombieId, string name, uint dna);```
+`event NewZombie(uint zombieId, string name, uint dna);`
 In Web3.js, you can subscribe to an event so your web3 provider triggers some logic in your code every time it fires:
 
 ```javascript
-cryptoZombies.events.NewZombie()
-.on("data", function(event) {
-  let zombie = event.returnValues;
-  // We can access this event's 3 return values on the `event.returnValues` object:
-  console.log("A new zombie was born!", zombie.zombieId, zombie.name, zombie.dna);
-}).on("error", console.error);
+cryptoZombies.events
+  .NewZombie()
+  .on("data", function (event) {
+    let zombie = event.returnValues;
+    // We can access this event's 3 return values on the `event.returnValues` object:
+    console.log("A new zombie was born!", zombie.zombieId, zombie.name, zombie.dna);
+  })
+  .on("error", console.error);
 ```
 
->Note that this would trigger an alert every time ANY zombie was created in our DApp — not just for the current user. What if we only wanted alerts for the current user?
+> Note that this would trigger an alert every time ANY zombie was created in our DApp — not just for the current user. What if we only wanted alerts for the current user?
 
 ### Using indexed
+
 In order to filter events and only listen for changes related to the current user, our Solidity contract would have to use the indexed keyword, like we did in the Transfer event of our ERC721 implementation:
 
-### event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
-In this case, because _from and _to are indexed, that means we can filter for them in our event listener in our front end:
+### event Transfer(address indexed \_from, address indexed \_to, uint256 \_tokenId);
+
+In this case, because \_from and \_to are indexed, that means we can filter for them in our event listener in our front end:
 
 // Use `filter` to only fire this code when `_to` equals `userAccount`
+
 ```javascript
-cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
-.on("data", function(event) {
-  let data = event.returnValues;
-  // The current user just received a zombie!
-  // Do something here to update the UI to show it
-}).on("error", console.error);
+cryptoZombies.events
+  .Transfer({ filter: { _to: userAccount } })
+  .on("data", function (event) {
+    let data = event.returnValues;
+    // The current user just received a zombie!
+    // Do something here to update the UI to show it
+  })
+  .on("error", console.error);
 ```
+
 As you can see, using events and indexed fields can be quite a useful practice for listening to changes to your contract and reflecting them in your app's front-end.
 
 ### Querying past events
+
 We can even query past events using getPastEvents, and use the filters fromBlock and toBlock to give Solidity a time range for the event logs ("block" in this case referring to the Ethereum block number):
 
 ```javascript
-cryptoZombies.getPastEvents("NewZombie", { fromBlock: 0, toBlock: "latest" })
-.then(function(events) {
+cryptoZombies.getPastEvents("NewZombie", { fromBlock: 0, toBlock: "latest" }).then(function (events) {
   // `events` is an array of `event` objects that we can iterate, like we did above
   // This code will get us a list of every zombie that was ever created
 });
 ```
+
 Because you can use this method to query the event logs since the beginning of time, this presents an interesting use case: Using events as a cheaper form of storage.
 
 If you recall, saving data to the blockchain is one of the most expensive operations in Solidity. But using events is much much cheaper in terms of gas.
@@ -422,10 +457,10 @@ The tradeoff here is that events are not readable from inside the smart contract
 
 For example, we could use this as a historical record of zombie battles — we could create an event for every time one zombie attacks another and who won. The smart contract doesn't need this data to calculate any future outcomes, but it's useful data for users to be able to browse from the app's front-end.
 
-
 <hr>
 
 ## Build Artifacts : (Testing Smart Contracts)
+
 Every time you compile a smart contract, the Solidity compiler generates a JSON file (referred to as build artifacts) which contains the binary representation of that contract and saves it in the build/contracts folder.
 
 Next, when you run a migration, Truffle updates this file with the information related to that network.
@@ -439,9 +474,11 @@ Say there was a contract called myAwesomeContract. We could do something like th
 ```javascript
 const myAwesomeContract = artifacts.require(“myAwesomeContract”);
 ```
+
 The function returns something called a contract abstraction. In a nutshell, a contract abstraction hides the complexity of interacting with Ethereum and provides a convenient JavaScript interface to our Solidity smart contract. We'll be using it in the next chapters.
 
 ### The contract() function
+
 Behind the scenes, Truffle adds a thin wrapper around Mocha in order to make testing simpler. Since our course focuses on Ethereum development, we won't be spending much time explaining the bits and bytes of Mocha. If you're inclined to learn more about Mocha, check out their website, once you're done with this lesson. For now, you only have to understand what we cover here - how to:
 
 group tests by calling a function named contract(). It extends Mocha's describe() by providing a list of accounts for testing and doing some cleanup as well.
@@ -453,12 +490,12 @@ execute them: the way we’ll be doing this is by calling a function named it() 
 Putting it together, here's a bare-bones test:
 
 ```javascript
- contract("MyAwesomeContract", (accounts) => {
-   it("should be able to receive Ethers", () => {
-   })
- })
- ```
->Note: A well-thought test explains what the code actually does. Make sure the description of the test suite and the test case can be read together as a coherent statement. It’s like you’re writing documentation.
+contract("MyAwesomeContract", (accounts) => {
+  it("should be able to receive Ethers", () => {});
+});
+```
+
+> Note: A well-thought test explains what the code actually does. Make sure the description of the test suite and the test case can be read together as a coherent statement. It’s like you’re writing documentation.
 
 ### Usually, every test has the following phases:
 
@@ -471,32 +508,34 @@ Putting it together, here's a bare-bones test:
 Lets look at what our test should do in some more detail.
 
 ### Set up
+
 In Chapter 2, you learned to create a contract abstraction. However, a contract abstraction, as its name says, is just an abstraction. In order to actually interact with our smart contract, we have to create a JavaScript object that will act as an instance of the contract. Continuing our example with myAwesomeContract, we can use the contract abstraction to initialize our instance like this:
 
 ```Javascript
 const contractInstance = await myAwesomeContract.new();
 ```
 
-
 ### The context function
+
 To group tests, Truffle provides a function called context. Let me quickly show you how use it in order to better structure our code:
 
 ```javascript
 context("with the single-step transfer scenario", async () => {
-    it("should transfer a zombie", async () => {
-      // TODO: Test the single-step transfer scenario.
-    })
-})
+  it("should transfer a zombie", async () => {
+    // TODO: Test the single-step transfer scenario.
+  });
+});
 
 context("with the two-step transfer scenario", async () => {
-    it("should approve and then transfer a zombie when the approved address calls transferFrom", async () => {
-      // TODO: Test the two-step scenario.  The approved address calls transferFrom
-    })
-    it("should approve and then transfer a zombie when the owner calls transferFrom", async () => {
-        // TODO: Test the two-step scenario.  The owner calls transferFrom
-     })
-})
+  it("should approve and then transfer a zombie when the approved address calls transferFrom", async () => {
+    // TODO: Test the two-step scenario.  The approved address calls transferFrom
+  });
+  it("should approve and then transfer a zombie when the owner calls transferFrom", async () => {
+    // TODO: Test the two-step scenario.  The owner calls transferFrom
+  });
+});
 ```
+
 If we add this to our CryptoZombies.js file and then run truffle test the output would look similar to this:
 
 ```Contract: CryptoZombies
@@ -511,6 +550,7 @@ If we add this to our CryptoZombies.js file and then run truffle test the output
 
   5 passing (2s)
 ```
+
 Well?
 
 Hmm...
@@ -519,22 +559,23 @@ Take a look again - there's an issue with the above output. It looks like all te
 
 Fortunately, there's an easy solution- if we just place an x in front of the context() functions as follows: xcontext(), Truffle will skip those tests.
 
->Note: x can be placed in front of an it() function as well. Don't forget to remove all the x's when the tests for those functions have been written!
+> Note: x can be placed in front of an it() function as well. Don't forget to remove all the x's when the tests for those functions have been written!
 
 <hr>
 
 ## Truffle's Default Directory Structure
+
 So, running the truffle init command inside of the CryptoZombies directory, should create several directories and some JavaScript and Solidity files. Let's have a closer look:
 
 **contracts**: this is the place where Truffle expects to find all our smart contracts. To keep the code organized, we can even create nested folders such as contracts/tokens. Pretty neat😉.
 
->Note: truffle init should automatically create a contract called Migrations.sol and the corresponding migration file. We'll explain them a bit later.
+> Note: truffle init should automatically create a contract called Migrations.sol and the corresponding migration file. We'll explain them a bit later.
 
 **migrations**: a migration is a JavaScript file that tells Truffle how to deploy a smart contract.
 
 **test**: here we are expected to put the unit tests which will be JavaScript or Solidity files. Remember, once a contract is deployed it can't be changed, making it essential that we test our smart contracts before we deploy them.
 
-```truffle.js and truffle-config.js:``` config files used to store the network settings for deployment. Truffle needs two config files because on Windows having both truffle.js and truffle.exe in the same folder might generate conflicts. Long story short - if you are running Windows, it is advised to delete truffle.js and use truffle-config.js as the default config file. Check out Truffle's official documentation to further your understanding.
+`truffle.js and truffle-config.js:` config files used to store the network settings for deployment. Truffle needs two config files because on Windows having both truffle.js and truffle.exe in the same folder might generate conflicts. Long story short - if you are running Windows, it is advised to delete truffle.js and use truffle-config.js as the default config file. Check out Truffle's official documentation to further your understanding.
 
 But why should I use this directory structure? I'm not used to it and it looks complicated...
 
@@ -543,20 +584,23 @@ Well, there's are a few good reasons. First, Truffle will not work as expected i
 Second, by adhering to this convention your projects will be easily understood by other developers. To put it short, using a standard folder structures and code conventions make it easier if you expand or change your team in the future.
 
 ### truffle-hdwallet-provider
+
 In this lesson, we will be using Infura to deploy our code to Ethereum. This way, we can run the application without needing to set up our own Ethereum node or wallet. However, to keep things secure, Infura does not manage the private keys, which means it can't sign transactions on our behalf. Since deploying a smart contract requires Truffle to sign transactions, we are going to need a tool called truffle-hdwallet-provider. Its only purpose is to handle the transaction signing.
 
->Note: Maybe you are asking why we chose not to install truffle-hdwallet-provider in the previous chapter using something like:
+> Note: Maybe you are asking why we chose not to install truffle-hdwallet-provider in the previous chapter using something like:
 
-``` npm install truffle truffle-hdwallet-provider```
+` npm install truffle truffle-hdwallet-provider`
 
 <hr>
 
 ## ORACLES
 
 ### Calling Other Contracts:
+
 Awesome! Now that you've saved the address of the oracle into a variable, let's learn about how you can call a function from a different contract.
 
 ### Calling the Oracle Contract
+
 For the caller contract to interact with the oracle, you must first define something called an interface.
 
 Interfaces are somehow similar to contracts, but they only declare functions. In other words, an interface can't:
@@ -564,7 +608,7 @@ Interfaces are somehow similar to contracts, but they only declare functions. In
 - define state variables,
 - constructors,
 - or inherit from other contracts.
-You can think of an interface as of an ABI. Since they're used to allow different contracts to interact with each other, all functions must be external
+  You can think of an interface as of an ABI. Since they're used to allow different contracts to interact with each other, all functions must be external
 
 Let's look at a simple example. Suppose there's a contract called FastFood that looks something like the following:
 
@@ -577,9 +621,10 @@ contract FastFood {
   }
 }
 ```
+
 This very simple contract implements a function that "makes" a sandwich. If you know the address of the FastFood contract and the signature of the makeSandwich, then you can call it.
 
->Note: A function signature comprises the function name, the list of the parameters, and the return value(s).
+> Note: A function signature comprises the function name, the list of the parameters, and the return value(s).
 
 Continuing with our example, let's say you want to write a contract called PrepareLunch that calls the makeSandwich function, passing the list of ingredients such as "sliced ham" and "pickled veggies". I'm not hungry but this sounds tempting😄.
 
@@ -594,14 +639,15 @@ interface FastFoodInterface {
    function makeSandwich(string calldata _fillingA, string calldata _fillingB) external;
 }
 ```
+
 Next, you must import the contents of the ./FastFoodInterface.sol file into the PrepareLaunch contract.
 
 Lastly, you must instantiate the FastFood contract using the interface:
 
-```fastFoodInstance = FastFoodInterface(_address);```
+`fastFoodInstance = FastFoodInterface(_address);`
 At this point, the PrepareLunch smart contract can call the makeSandwich function of the FastFood smart contract:
 
- ```fastFoodInstance.makeSandwich("sliced ham", "pickled veggies");```
+`fastFoodInstance.makeSandwich("sliced ham", "pickled veggies");`
 Putting it together, here's how the PrepareLunch contract would look like:
 
 ```javascript
@@ -617,3 +663,12 @@ contract PrepareLunch {
   }
 }
 ```
+
+<hr>
+
+## ORACLE
+When you bring the oracle down for an upgrade. Yeah, even if it'll take just a few minutes until you bring it back online, all the requests made during this period will be lost. And there's no way to notify the app that a particular request hasn't been processed. A solution for this is to keep track of the last block that got processed, and, every time the oracle starts, it should take it from there.
+
+A production-ready oracle should take care of this, and a few other things, of which, the most important is: **how to make the oracle more decentralized.?**
+
+<hr>
