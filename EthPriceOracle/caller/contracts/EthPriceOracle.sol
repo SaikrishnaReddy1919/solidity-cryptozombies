@@ -10,6 +10,9 @@ contract EthPriceOracle {
   mapping(uint256=>bool) pendingRequests;
   event GetLatestEthPriceEvent(address callerAddress, uint id);
   event SetLatestEthPriceEvent(uint256 ethPrice, address callerAddress);
+  constructor (address _owner) public {
+    owners.add(_owner);
+  }
   function getLatestEthPrice() public returns (uint256) {
     randNonce++;
     uint id = uint(keccak256(abi.encodePacked(now, msg.sender, randNonce))) % modulus;
