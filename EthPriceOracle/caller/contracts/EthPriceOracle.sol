@@ -8,17 +8,18 @@ contract EthPriceOracle {
   uint private randNonce = 0;
   uint private modulus = 1000;
   uint private numOracles = 0;
+  uint private THRESHOLD = 0;
   mapping(uint256=>bool) pendingRequests;
   struct Response {
     address oracleAddress;
     address callerAddress;
     uint256 ethPrice;
   }
-  mapping (uint256=>Response[]) public requestIdToResponse;
   event GetLatestEthPriceEvent(address callerAddress, uint id);
   event SetLatestEthPriceEvent(uint256 ethPrice, address callerAddress);
   event AddOracleEvent(address oracleAddress);
   event RemoveOracleEvent(address oracleAddress);
+  event SetThresholdEvent (uint threshold);
   constructor (address _owner) public {
     owners.add(_owner);
   }
@@ -37,6 +38,11 @@ contract EthPriceOracle {
     numOracles--;
     emit RemoveOracleEvent(_oracle);
   }
+  function setThreshold (uint _threshold) public {
+    require(owners.has(msg.sender), "Not an owner!");
+    THRESHOLD = _threshold;
+    emit SetThresholdEvent(THRESHOLD);
+  }
   function getLatestEthPrice() public returns (uint256) {
     randNonce++;
     uint id = uint(keccak256(abi.encodePacked(now, msg.sender, randNonce))) % modulus;
@@ -50,10 +56,15 @@ contract EthPriceOracle {
     Response memory resp;
     resp = Response(msg.sender, _callerAddress, _ethPrice);
     requestIdToResponse[_id].push(resp);
-    delete pendingRequests[_id];
-    CallerContractInterface callerContractInstance;
-    callerContractInstance = CallerContractInterface(_callerAddress);
-    callerContractInstance.callback(_ethPrice, _id);
-    emit SetLatestEthPriceEvent(_ethPrice, _callerAddress);
+    // Start here
+    uint numResponses = requestIdToResponse[_id].length;
+    if(numResponses == THRESHOLD) {
+      delete pendingRequests[_id];
+      CallerContractInterface callerContractInstance;
+      callerContractInstance = CallerContractInterface(_callerAddress);
+      callerContractInstance.callback(_ethPrice, _id);
+      emit SetLatestEthPriceEvent(_ethPrice, _callerAddress);
+    }
   }
 }
+
