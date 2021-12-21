@@ -1,10 +1,13 @@
 pragma solidity >=0.5.0 <0.6.0;
 import "openzeppelin-solidity/contracts/access/Roles.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./CallerContractInterface.sol";
 contract EthPriceOracle {
   using Roles for Roles.Role;
   Roles.Role private owners;
   Roles.Role private oracles;
+  // 1. Tell your contract to use `SafeMath` for `uint256`
+  using SafeMath for uint256;
   uint private randNonce = 0;
   uint private modulus = 1000;
   uint private numOracles = 0;
@@ -56,14 +59,13 @@ contract EthPriceOracle {
     Response memory resp;
     resp = Response(msg.sender, _callerAddress, _ethPrice);
     requestIdToResponse[_id].push(resp);
-    // Start here
     uint numResponses = requestIdToResponse[_id].length;
-    if(numResponses == THRESHOLD) {
+    if (numResponses == THRESHOLD) {
       uint computedEthPrice = 0;
-      for(uint f=0; f < requestIdToResponse[_id].length; f++) {
-        computedEthPrice += requestIdToResponse[_id][f].ethPrice;
+        for (uint f=0; f < requestIdToResponse[_id].length; f++) {
+        computedEthPrice = computedEthPrice.add(requestIdToResponse[_id][f].ethPrice);
       }
-      computedEthPrice = computedEthPrice / numResponses;
+      computedEthPrice = computedEthPrice.div(numResponses);
       delete pendingRequests[_id];
       CallerContractInterface callerContractInstance;
       callerContractInstance = CallerContractInterface(_callerAddress);
@@ -72,4 +74,5 @@ contract EthPriceOracle {
     }
   }
 }
+
 
